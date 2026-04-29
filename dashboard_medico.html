@@ -1,0 +1,24 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'medico') {
+    header("Location: login_medico.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Panel Médico</title>
+</head>
+<body>
+    <div class="app-container">
+        <h3>Bienvenido Dr. <?php echo $_SESSION['nombre']; ?></h3>
+        <button class="btn-main" onclick="location.href='agendar_medico.html'">Agendar Cita</button>
+        <button class="btn-main" onclick="location.href='visor_clinico.html'">Visor Clínico</button>
+        <button class="btn-main" onclick="location.href='emitir_receta.html'">Emitir Receta</button>
+        <button class="btn-main" style="background:#ffcccc;" onclick="location.href='index.html'">Cerrar Sesión</button>
+    </div>
+</body>
+</html>

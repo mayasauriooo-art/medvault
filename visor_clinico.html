@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Visor Clinico</title>
+</head>
+<body>
+    <div class="app-container">
+        <h3>Visor Clinico</h3>
+        <div id="busqueda-paciente">
+            <input type="text" id="otp-code" placeholder="Clave de acceso (4 digitos)" style="text-align:center;">
+            <button class="btn-main" onclick="mostrarHistorial()">Cargar Historial</button>
+        </div>
+
+        <div id="contenido-historial" style="display:none;">
+            <div class="section-card" style="text-align: left;">
+                <p><strong>Paciente:</strong> Juan Perez</p>
+                <p><strong>Edad:</strong> 28 anos</p>
+                <hr style="border: 0.5px solid var(--bg-color);">
+                <p><small>Historial de Boveda:</small></p>
+                <button class="btn-main" style="font-size: 0.8em; padding: 5px;">Ver Receta Anterior</button>
+            </div>
+            
+            <h4>Nueva Entrada</h4>
+            <input type="text" placeholder="Diagnostico actual">
+            <button class="btn-main" style="background: var(--bg-color);">Subir Nueva Receta/Estudio</button>
+        </div>
+        
+        <button class="btn-main" style="margin-top:20px;" onclick="location.href='dashboard_medico.html'">Cerrar Visor</button>
+    </div>
+
+    <script>
+        function mostrarHistorial() {
+            const code = document.getElementById('otp-code').value;
+            if(code.length === 4) {
+                document.getElementById('busqueda-paciente').style.display = 'none';
+                document.getElementById('contenido-historial').style.display = 'block';
+            } else {
+                alert("Por favor ingrese la clave valida del paciente");
+            }
+        }
+    </script>
+</body>
+</html>

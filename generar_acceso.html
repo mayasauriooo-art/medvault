@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Generar Acceso - MedVault</title>
+</head>
+<body>
+    <div class="app-container">
+        <h3>Acceso Temporal</h3>
+        <p>Muestra este codigo a tu medico para desbloquear tu historial.</p>
+        <div class="section-card">
+            <h1 id="codigo-generado" style="font-size: 3em; letter-spacing: 10px;">----</h1>
+            <button class="btn-main" onclick="crearCodigo()">Generar Nueva Clave</button>
+        </div>
+        <p style="font-size: 0.7em;">Esta clave expirara en 10 minutos por seguridad.</p>
+        <button class="btn-main" onclick="location.href='dashboard_paciente.html'">Volver</button>
+    </div>
+    <script>
+        function crearCodigo() {
+            const num = Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('codigo-generado').innerText = num;
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

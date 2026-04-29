@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Mi Boveda</title>
+</head>
+<body>
+    <div class="app-container">
+        <h3>Boveda de Documentos</h3>
+        <p>Sube tus recetas, estudios o radiografias</p>
+        
+        <div class="section-card">
+            <input type="file" id="foto-documento" accept="image/*" capture="camera" style="display:none">
+            <button class="btn-main" onclick="document.getElementById('foto-documento').click()">Tomar Foto a Receta</button>
+            <button class="btn-main" onclick="document.getElementById('foto-documento').click()">Subir Estudio (PDF/JPG)</button>
+        </div>
+
+        <div class="section-card" style="text-align: left; background: var(--bg-color);">
+            <p><small>Ultimos archivos:</small></p>
+            <div style="font-size: 0.8em; border-bottom: 1px solid var(--accent-color); padding: 5px;">Receta_Gripe_15Abr.jpg</div>
+            <div style="font-size: 0.8em; border-bottom: 1px solid var(--accent-color); padding: 5px;">Analisis_Sangre_Marzo.pdf</div>
+        </div>
+        
+        <button class="btn-main" onclick="location.href='dashboard_paciente.html'">Volver al Panel</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
