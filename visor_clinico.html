@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Visor Clínico - MedVault</title>
+</head>
+<script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Visor Clínico</h3>
+        
+        <div id="busqueda-paciente">
+            <p>Ingrese la clave de 4 dígitos proporcionada por el paciente:</p>
+            <input type="text" id="otp-code" placeholder="0000" maxlength="4" style="text-align:center; font-size: 2em; width: 80%; border-radius: 15px; border: 2px solid #FFB7CE;">
+            <button class="btn-main" id="btnCargar" style="margin-top:15px;">🔓 Abrir Historial</button>
+        </div>
+
+        <div id="contenido-historial" style="display:none;">
+            <div class="section-card" style="text-align: left;">
+                <p style="margin-bottom: 5px;"><strong>💊 Recetas Médicas:</strong></p>
+                <div id="lista-recetas-visor" style="margin-bottom: 20px;"></div>
+
+                <p style="margin-bottom: 5px;"><strong>📄 Estudios y Escaneos:</strong></p>
+                <div id="lista-documentos-visor"></div>
+            </div>
+            
+            <button class="btn-main" onclick="location.reload()" style="background: #eee; color: #666; font-size: 0.8em;">Nueva consulta</button>
+        </div>
+        
+        <button class="btn-main" style="margin-top:20px;" onclick="location.href='dashboard_medico.html'">Cerrar Visor</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('btnCargar').addEventListener('click', async () => {
+            const code = document.getElementById('otp-code').value;
+            const contenedorDocs = document.getElementById('lista-documentos-visor');
+            const contenedorRecetas = document.getElementById('lista-recetas-visor');
+            
+            if(code.length !== 4) return alert("Ingrese los 4 dígitos");
+
+            try {
+                // 1. Validar el código de acceso para saber de quién son los datos
+                const qAcceso = query(collection(db, "codigos_acceso"), where("codigo", "==", code));
+                const snapAcceso = await getDocs(qAcceso);
+
+                if (snapAcceso.empty) {
+                    alert("Clave incorrecta o caducada 🍓");
+                    return;
+                }
+
+                const nombrePaciente = snapAcceso.docs[0].data().paciente;
+
+                // 2. Traer Recetas y Documentos usando el nombre del código
+                const qRecetas = query(collection(db, "recetas"), where("paciente_nombre", "==", nombrePaciente));
+                const qDocs = query(collection(db, "boveda_paciente"), where("paciente_nombre", "==", nombrePaciente));
+
+                const [snapRecetas, snapDocs] = await Promise.all([getDocs(qRecetas), getDocs(qDocs)]);
+
+                // 3. Renderizar Recetas
+                contenedorRecetas.innerHTML = "";
+                if (snapRecetas.empty) {
+                    contenedorRecetas.innerHTML = "<p style='font-size:0.75em; color:#999;'>No hay recetas registradas.</p>";
+                } else {
+                    snapRecetas.forEach(doc => {
+                        const r = doc.data();
+                        contenedorRecetas.innerHTML += `
+                            <div style="background:#f9f9f9; padding:8px; border-radius:10px; margin-bottom:5px; border-left:3px solid #5D8AA8;">
+                                <p style="margin:0; font-size:0.85em;"><strong>${r.medicamento}</strong></p>
+                                <p style="margin:0; font-size:0.7em; color:#666;">Dr. ${r.medico_nombre} | ${r.fecha}</p>
+                            </div>`;
+                    });
+                }
+
+                // 4. Renderizar Documentos
+                contenedorDocs.innerHTML = "";
+                if (snapDocs.empty) {
+                    contenedorDocs.innerHTML = "<p style='font-size:0.75em; color:#999;'>No hay escaneos disponibles.</p>";
+                } else {
+                    snapDocs.forEach(doc => {
+                        const d = doc.data();
+                        contenedorDocs.innerHTML += `
+                            <div style="background:#fff; padding:8px; border-radius:10px; margin-bottom:5px; border:1px solid #FFB7CE;">
+                                <p style="margin:0; font-size:0.8em; display:inline-block;">📄 ${d.nombre_archivo}</p>
+                                <a href="${d.url_archivo}" target="_blank" style="float:right; font-size:0.75em; color:#FFB7CE; font-weight:bold;">VER FOTO</a>
+                                <div style="clear:both;"></div>
+                            </div>`;
+                    });
+                }
+
+                document.getElementById('busqueda-paciente').style.display = 'none';
+                document.getElementById('contenido-historial').style.display = 'block';
+
+            } catch (e) {
+                console.error(e);
+                alert("Error al cargar la bóveda digital. ✨");
+            }
+        });
+    </script>
+</body>
+</html>

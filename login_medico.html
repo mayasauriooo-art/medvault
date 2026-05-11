@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>MedVault - Acceso Médico</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h2 class="logo-text" style="color: #5D8AA8; margin-bottom: 20px;">Acceso Médico</h2>
+        
+        <div class="section-card">
+            <input type="text" id="cedulaLogin" placeholder="Cédula Profesional" class="input-custom">
+            <input type="text" id="instLogin" placeholder="Código de Institución" class="input-custom">
+            <input type="password" id="passLogin" placeholder="Contraseña" class="input-custom">
+            
+            <button id="btnEntrar" class="btn-main btn-highlight" style="margin-top: 15px;">
+                Validar y Entrar
+            </button>
+        </div>
+
+        <p style="font-size: 0.8rem; margin-top: 20px; color: var(--text-color);">¿Aún no tienes perfil profesional?</p>
+        <button class="btn-mini" onclick="location.href='registro_medico.html'">Crear Perfil Médico</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('btnEntrar').addEventListener('click', async () => {
+            const cedulaInput = document.getElementById('cedulaLogin').value.trim();
+            const instInput = document.getElementById('instLogin').value.trim();
+            const passInput = document.getElementById('passLogin').value.trim();
+
+            if (!cedulaInput || !instInput || !passInput) {
+                alert("Por favor, llena todos los campos ✨");
+                return;
+            }
+
+            try {
+                const medicosRef = collection(db, "medicos");
+                const querySnapshot = await getDocs(medicosRef);
+                let doctorEncontrado = null;
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const coincidioCedula = String(data.cedula) === String(cedulaInput);
+                    const coincidioInst = String(data.institucion) === String(instInput);
+                    const coincidioPass = String(data.password) === String(passInput);
+
+                    if (coincidioCedula && coincidioInst && coincidioPass) {
+                        doctorEncontrado = data;
+                    }
+                });
+
+                if (doctorEncontrado) {
+                    // VITAL: Limpiar cualquier sesión de paciente o médico anterior
+                    localStorage.clear();
+
+                    const nombreLimpio = doctorEncontrado.nombre.trim();
+                    
+                    // Guardamos los datos del médico actual
+                    localStorage.setItem('medico-nombre', nombreLimpio);
+                    localStorage.setItem('usuario-tipo', 'medico');
+
+                    alert("¡Bienvenida Dra. " + nombreLimpio + "! ✨🍓");
+                    location.href = 'dashboard_medico.html'; 
+                } else {
+                    alert("Los datos no coinciden. Revisa tu cédula y contraseña.");
+                }
+
+            } catch (error) {
+                console.error("Error detallado:", error);
+                alert("Error de conexión: " + error.message);
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

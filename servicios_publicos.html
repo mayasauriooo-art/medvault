@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedVault - Servicios Públicos</title>
+    <link rel="stylesheet" href="style.css"> 
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Título principal -->
+        <h1 class="logo-text" style="font-size: 2.5rem; margin-bottom: 5px;">MedVault</h1>
+        <p style="opacity: 0.7; margin-bottom: 30px;">Tu bóveda médica digital</p>
+ <center>
+        <!-- Sección de Búsqueda (Como en image_b123b7.png) -->
+        <div class="section-card" style="padding: 20px;">
+            <h3 style="color: var(--text-color); margin-bottom: 15px;">Servicios Públicos</h3>
+            <center>
+            <div class="btn-main" style="background: var(--button-color); color: white; margin-bottom: 15px; cursor: default;">
+                Doctores y Hospitales
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" id="userInput" placeholder="Escribe el nombre o especialidad..." 
+                       style="flex: 1; padding: 12px; border-radius: 20px; border: 1px solid rgba(0,0,0,0.1); outline: none;">
+                <button style="background: white; border: 1px solid black; border-radius: 5px; padding: 10px; cursor: pointer;">
+                    🔍
+                </button>
+            </div>
+        </div>
+</center>
+        <!-- Contenedor donde aparecerán los resultados de Firebase -->
+        <div id="resultsContainer" style="margin-top: 20px;"></div>
+
+        <!-- Botón de navegación -->
+        <button class="btn-main btn-highlight" onclick="window.history.back()" style="margin-top: 20px;">
+            Volver al Menú
+        </button>
+    </div>
+
+    <!-- Script de Conexión MedVault a Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const inputBusqueda = document.getElementById('userInput');
+        const contenedorResultados = document.getElementById('resultsContainer');
+
+        inputBusqueda.addEventListener('input', async (e) => {
+            const texto = e.target.value.toLowerCase();
+            
+            if (texto.length < 3) {
+                contenedorResultados.innerHTML = "";
+                return;
+            }
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "servicios"));
+                contenedorResultados.innerHTML = ""; 
+                let contador = 0;
+
+                querySnapshot.forEach((doc) => {
+                    const doctor = doc.data();
+                    
+                    if (doctor.nombre.toLowerCase().includes(texto) || doctor.especialidad.toLowerCase().includes(texto)) {
+                        contador++;
+                        
+                        contenedorResultados.innerHTML += `
+                            <div class="section-card" style="text-align: left; margin-bottom: 15px; animation: fadeIn 0.3s ease;">
+                                <h4 style="margin: 0; color: var(--text-color);">${doctor.nombre}</h4>
+                                <p style="margin: 5px 0; font-size: 0.85rem; opacity: 0.9;">
+                                    ⚕️ <b>Especialidad:</b> ${doctor.especialidad}<br>
+                                    📍 <b>Ubicación:</b> ${doctor.direccion}
+                                </p>
+                                <button class="btn-mini" style="width: 100%; margin-top: 10px;">Contactar</button>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (contador === 0) {
+                    contenedorResultados.innerHTML = '<p style="font-size: 0.9rem; opacity: 0.6;">No encontramos coincidencias.</p>';
+                }
+
+            } catch (error) {
+                console.error("Error al leer Firebase:", error);
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

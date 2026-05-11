@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Emitir Receta - MedVault</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Nueva Receta Digital</h3>
+        <div class="section-card" style="text-align: left;">
+            <label><small>Nombre del Paciente:</small></label>
+            <input type="text" id="pacienteReceta" placeholder="Nombre exacto del paciente" class="input-custom">
+            
+            <label><small>Medicamento y Dosis:</small></label>
+            <input type="text" id="medicamento" placeholder="Ej: Paracetamol 500mg" class="input-custom">
+            
+            <label><small>Indicaciones:</small></label>
+            <input type="text" id="indicaciones" placeholder="Tomar cada 8 horas" class="input-custom">
+            
+            <label><small>Duración:</small></label>
+            <input type="text" id="duracion" placeholder="5 días" class="input-custom">
+            
+            <button id="btnEmitir" class="btn-main">Emitir y Firmar ✨</button>
+        </div>
+        <button class="btn-main" onclick="location.href='dashboard_medico.html'" style="margin-top: 10px; background: #eee; color: #666;">Cancelar</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('btnEmitir').addEventListener('click', async () => {
+            const paciente = document.getElementById('pacienteReceta').value.trim();
+            const med = document.getElementById('medicamento').value.trim();
+            const ind = document.getElementById('indicaciones').value.trim();
+            const dur = document.getElementById('duracion').value.trim();
+            
+            // Obtenemos el nombre del médico que inició sesión
+            const medico = localStorage.getItem('medico-nombre') || "Doctor General";
+
+            if (!paciente || !med || !ind) {
+                alert("Por favor completa los datos de la receta 📝");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "recetas"), {
+                    paciente_nombre: paciente, 
+                    medicamento: med,
+                    indicaciones: ind,
+                    duracion: dur,
+                    medico_nombre: medico,
+                    fecha: new Date().toLocaleDateString(),
+                    timestamp: new Date(),
+                    tipo: "Receta Médica"
+                });
+
+                alert('¡Receta enviada con éxito! 🍓');
+                location.href = 'dashboard_medico.html';
+            } catch (error) {
+                alert("Error al emitir: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

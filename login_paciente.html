@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Login Paciente</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Acceso Paciente</h3>
+        <div class="section-card">
+            <input type="email" id="loginCorreo" placeholder="Correo Electrónico" class="input-custom">
+            <input type="password" id="loginPass" placeholder="Contraseña" class="input-custom">
+            <button id="btnEntrar" class="btn-main">Entrar</button>
+        </div>
+
+        <div class="registro-container">
+            <p style="font-size: 0.8rem; margin-top: 20px; margin-bottom: 5px;">¿Eres nuevo en MedVault?</p>
+            <button class="btn-mini" onclick="location.href='registro_paciente.html'">Crear Cuenta de Paciente</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. Importaciones necesarias de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 2. Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 3. Lógica del botón Entrar
+        document.getElementById('btnEntrar').addEventListener('click', async () => {
+            const correoInput = document.getElementById('loginCorreo').value.trim();
+            const passInput = document.getElementById('loginPass').value.trim();
+
+            if (!correoInput || !passInput) {
+                alert("Por favor, ingresa tus datos.");
+                return;
+            }
+
+            try {
+                const pacientesRef = collection(db, "pacientes");
+                // Ahora 'query' y 'where' funcionarán porque ya están importados arriba
+                const q = query(pacientesRef, where("correo", "==", correoInput), where("password", "==", passInput));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const usuarioEncontrado = querySnapshot.docs[0].data();
+
+                    // Limpiamos local storage para iniciar sesión limpia
+                    localStorage.clear();
+
+                    // Guardamos los datos necesarios
+                    localStorage.setItem('usuario-nombre', usuarioEncontrado.nombre.trim());
+                    localStorage.setItem('usuario-tipo', 'paciente');
+                    
+                    alert("¡Hola de nuevo, " + usuarioEncontrado.nombre + "! ✨");
+                    location.href = 'dashboard_paciente.html';
+                } else {
+                    alert("Correo o contraseña incorrectos.");
+                }
+            } catch (error) {
+                console.error("Error en login:", error);
+                alert("Error de conexión: " + error.message);
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

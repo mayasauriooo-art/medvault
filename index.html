@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>MedVault - Inicio</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <a href="configuracion.html" class="settings-icon">⚙️</a>
+
+    <div class="app-container">
+        <h1 style="font-size: 1.8rem; margin-bottom: 5px;">MedVault</h1>
+        <p style="font-size: 0.9rem; margin-bottom: 25px;">Tu bóveda médica digital</p>
+
+        <div class="main-access">
+            <div class="access-column">
+                <button class="btn-main" onclick="location.href='login_paciente.html'">PACIENTE</button>
+            </div>
+            <div class="access-column">
+                <button class="btn-main" onclick="location.href='login_medico.html'">MÉDICO</button>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <h4 style="margin-top: 0;">Servicios Públicos</h4>
+            <button class="btn-main" style="margin-bottom: 15px;" onclick="location.href='servicios_publicos.html'">
+                Doctores y Hospitales
+            </button>
+            
+            <div style="display: flex; gap: 8px; background: var(--input-bg); padding: 5px; border-radius: 12px;">
+                <input type="text" placeholder="Buscar especialidad..." style="margin:0; background:none; padding: 10px;">
+                <button style="border:none; background:none; cursor:pointer; padding: 0 10px;">🔍</button>
+            </div>
+        </div>
+    </div>
+    
+
+    <script src="script.js"></script>
+</body>
+</html>

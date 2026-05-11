@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Generar Acceso - MedVault</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Acceso Temporal</h3>
+        <p style="font-size: 0.9em; padding: 0 10px;">Muestra este código a tu médico para desbloquear tu historial clínico. ✨</p>
+        
+        <div class="section-card">
+            <h1 id="codigo-generado" style="font-size: 3.5em; letter-spacing: 8px; color: #FFB7CE; margin: 20px 0;">----</h1>
+            <button class="btn-main" id="btnGenerar">Generar Nueva Clave</button>
+        </div>
+
+        <p id="status-msg" style="font-size: 0.8rem; color: #5D8AA8; display:none; margin-top: 15px;">
+            ¡Clave activada en la bóveda! 🍓
+        </p>
+
+        <p style="font-size: 0.7em; margin-top: 25px; color: #888;">Esta clave es de uso único y expirará por tu seguridad.</p>
+        
+        <button class="btn-main" onclick="location.href='dashboard_paciente.html'" style="background: #eee; color: #666; margin-top: 10px;">Volver al Panel</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, deleteDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const nombreUsuario = localStorage.getItem('usuario-nombre');
+
+        document.getElementById('btnGenerar').addEventListener('click', async () => {
+            if (!nombreUsuario) return alert("Error: No se encontró sesión del paciente. Por favor, inicia sesión de nuevo.");
+
+            const btn = document.getElementById('btnGenerar');
+            btn.disabled = true;
+            btn.innerText = "Generando...";
+
+            // 1. Generar número aleatorio de 4 dígitos
+            const num = Math.floor(1000 + Math.random() * 9000);
+            
+            try {
+                // 2. Limpiar códigos viejos del mismo paciente
+                const q = query(collection(db, "codigos_acceso"), where("paciente", "==", nombreUsuario));
+                const snap = await getDocs(q);
+                
+                // Usamos Promise.all para borrar todo en paralelo y que sea más rápido
+                const borrados = snap.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(borrados);
+
+                // 3. Guardar el nuevo código
+                await addDoc(collection(db, "codigos_acceso"), {
+                    codigo: num.toString(),
+                    paciente: nombreUsuario,
+                    fecha: Timestamp.now()
+                });
+
+                // 4. Actualizar Interfaz
+                document.getElementById('codigo-generado').innerText = num;
+                document.getElementById('status-msg').style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Generar Nueva Clave";
+
+            } catch (e) {
+                console.error(e);
+                alert("Error al conectar con la bóveda");
+                btn.disabled = false;
+                btn.innerText = "Reintentar";
+            }
+        });
+    </script>
+</body>
+</html>

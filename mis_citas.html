@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Mis Citas - MedVault</title>
+</head>
+<body>
+    <div id="bg-container"></div>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Agendar Nueva Cita 🩺</h3>
+        
+        <div class="section-card" style="margin-bottom: 20px; background: rgba(255,255,255,0.9);">
+            <input type="text" id="medico-nombre" placeholder="Nombre del Médico" class="input-field" style="width: 90%; margin-bottom: 10px; padding: 8px;">
+            <input type="date" id="fecha-cita" class="input-field" style="width: 90%; margin-bottom: 10px; padding: 8px;">
+            <input type="time" id="hora-cita" class="input-field" style="width: 90%; margin-bottom: 10px; padding: 8px;">
+            <button class="btn-main" onclick="registrarCita()" style="background: #FFB7CE; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer;">Agendar Cita 🍓</button>
+        </div>
+
+        <hr style="border: 0; height: 1px; background: #5D8AA8; margin: 20px 0;">
+
+        <h3 style="color: #5D8AA8;">Mis Citas Agendadas 📅</h3>
+        <div id="contenedor-citas">
+            <p style="text-align: center; color: #888;">Cargando tus citas personales... ✨</p>
+        </div>
+
+        <button class="btn-main" onclick="location.href='dashboard_paciente.html'" style="margin-top: 20px;">Volver al Panel</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Registro de cita
+        window.registrarCita = async function() {
+            const nombreLocal = localStorage.getItem('usuario-nombre');
+            const medico = document.getElementById('medico-nombre').value;
+            const fecha = document.getElementById('fecha-cita').value;
+            const hora = document.getElementById('hora-cita').value;
+
+            if (!nombreLocal || !medico || !fecha || !hora) {
+                alert("Por favor llena todos los campos ✨");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "citas"), {
+                    paciente_nombre: nombreLocal.trim(), // Guardamos el nombre limpio
+                    medico_nombre: medico,
+                    fecha: fecha,
+                    hora: hora,
+                    estado: "pendiente",
+                    timestamp: serverTimestamp()
+                });
+                alert("Cita agendada! 🍓");
+                location.reload(); 
+            } catch (e) { console.error(e); }
+        };
+
+        // CARGA FILTRADA (Aquí es donde estaba el problema)
+        async function cargarCitas() {
+            const nombreLocal = localStorage.getItem('usuario-nombre');
+            const contenedor = document.getElementById('contenedor-citas');
+            
+            if (!nombreLocal) {
+                contenedor.innerHTML = "<p>Inicia sesión para ver tus citas. 🍓</p>";
+                return;
+            }
+
+            try {
+                const nombreLimpio = nombreLocal.trim();
+                const citasRef = collection(db, "citas");
+                
+                // Filtro obligatorio por paciente_nombre
+                const q = query(citasRef, where("paciente_nombre", "==", nombreLimpio));
+                
+                const snap = await getDocs(q);
+                contenedor.innerHTML = "";
+
+                if (snap.empty) {
+                    contenedor.innerHTML = `<p style="text-align:center; color:#999;">No tienes citas registradas, ${nombreLimpio}. ✨</p>`;
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    // Solo renderizamos si el nombre coincide exactamente (doble validación)
+                    if (c.paciente_nombre === nombreLimpio) {
+                        contenedor.innerHTML += `
+                            <div class="section-card" style="border-left: 5px solid #FFB7CE; text-align: left; margin-bottom: 10px; background: white; padding: 10px;">
+                                <p style="margin:2px 0;"><strong>👨‍⚕️ Médico:</strong> ${c.medico_nombre}</p>
+                                <p style="margin:2px 0;"><strong>📅 Fecha:</strong> ${c.fecha} | <strong>⏰ Hora:</strong> ${c.hora} hrs</p>
+                                <p style="font-size: 0.8em; color: #5D8AA8;">Estado: ${c.estado}</p>
+                            </div>`;
+                    }
+                });
+            } catch (e) { 
+                console.error(e);
+                contenedor.innerHTML = "<p>Error al cargar tus datos. ✨</p>";
+            }
+        }
+
+        cargarCitas();
+    </script>
+</body>
+</html>

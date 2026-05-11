@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>MedVault - Agendar Cita</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Agendar Nueva Consulta</h3>
+        <div class="section-card">
+            <form id="formCita">
+                <input type="text" id="nombrePac" placeholder="Nombre del Paciente (Exacto)" class="input-custom" required>
+                <input type="date" id="fechaCita" class="input-custom" required>
+                <input type="time" id="horaCita" class="input-custom" required>
+                <input type="text" id="motivoCita" placeholder="Motivo de consulta" class="input-custom">
+                
+                <button type="button" id="btnConfirmar" class="btn-main">Confirmar Cita</button>
+            </form>
+        </div>
+        <button class="btn-main" onclick="location.href='dashboard_medico.html'" style="margin-top: 10px;">Volver al Panel</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('btnConfirmar').addEventListener('click', async () => {
+            const nombre = document.getElementById('nombrePac').value.trim();
+            const fecha = document.getElementById('fechaCita').value;
+            const hora = document.getElementById('horaCita').value;
+            const motivo = document.getElementById('motivoCita').value.trim();
+            
+            const medicoNombre = localStorage.getItem('medico-nombre');
+
+            if (!nombre || !fecha || !hora) {
+                alert("Por favor completa los campos principales ✨");
+                return;
+            }
+
+            try {
+                // Guardado usando 'paciente_nombre' para que coincida con tu base de datos
+               // Dentro del evento click del botón confirmar
+await addDoc(collection(db, "citas"), {
+    paciente_nombre: document.getElementById('nombrePac').value.trim(), // <--- Debe ser exactamente así
+    medico_nombre: localStorage.getItem('medico-nombre'),
+    fecha: document.getElementById('fechaCita').value,
+    hora: document.getElementById('horaCita').value,
+    motivo: document.getElementById('motivoCita').value.trim(),
+    estado: "Confirmada"
+});
+
+                alert("¡Cita agendada con éxito! 🍓✨");
+                location.href = 'dashboard_medico.html';
+            } catch (error) {
+                console.error("Error al agendar:", error);
+                alert("Error al agendar: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

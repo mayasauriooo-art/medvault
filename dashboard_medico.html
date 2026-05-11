@@ -1,0 +1,72 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['rol'] != 'medico') {
+    header("Location: login_medico.php");
+    exit();
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Panel Médico - MedVault</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Bienvenido Dr. <span id="nombre-dr"><?php echo $_SESSION['nombre']; ?></span></h3>
+        
+        <button class="btn-main" onclick="location.href='agendar_medico.html'">➕ Agendar Cita</button>
+        <button class="btn-main" onclick="location.href='agenda.html'">📅 Ver mi Agenda</button>
+        <button class="btn-main" onclick="location.href='visor_clinico.html'">🔓 Visor Clínico</button>
+        <button class="btn-main" onclick="location.href='emitir_receta.html'">💊 Emitir Receta</button>
+        
+        <button class="btn-main"onclick="cerrarSesion()">Cerrar Sesión</button>
+    
+    </div>
+
+    <script>
+        // Guardamos el nombre del médico en el localStorage para que los .html puedan leerlo
+        const nombreMedico = "<?php echo $_SESSION['nombre']; ?>";
+        localStorage.setItem('usuario-nombre', nombreMedico);
+
+        function cerrarSesion() {
+            localStorage.clear();
+            location.href = 'index.html';
+        }
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

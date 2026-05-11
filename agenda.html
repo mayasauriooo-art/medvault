@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Mi Agenda Médica - MedVault</title>
+</head>
+<script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+<body>
+    <div id="bg-container"></div>
+
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Mi Agenda Médica</h3>
+        <div id="contenedor-citas">
+            <p style="text-align: center; color: #888;">Cargando tus citas del día... 🍓</p>
+        </div>
+        
+        <button id="btnVolver" class="btn-main" style="background:#eee; color:#666; margin-top:20px;" onclick="location.href='dashboard_medico.html'">Volver al Panel</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Obtenemos el nombre del médico actual
+        const nombreMedico = localStorage.getItem('medico-nombre');
+
+        async function cargarAgenda() {
+            const contenedor = document.getElementById('contenedor-citas');
+            
+            if (!nombreMedico) {
+                contenedor.innerHTML = "<p style='text-align:center;'>Error: No se encontró sesión de médico. 🍓</p>";
+                return;
+            }
+
+            try {
+                // Filtramos las citas de este médico en específico
+                const q = query(collection(db, "citas"), where("medico_nombre", "==", nombreMedico));
+                const snap = await getDocs(q);
+                
+                contenedor.innerHTML = "";
+
+                if(snap.empty) {
+                    contenedor.innerHTML = `<p style="text-align:center; color:#999;">No tiene citas agendadas aún, Dr. ${nombreMedico} 🍓</p>`;
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const c = doc.data();
+                    contenedor.innerHTML += `
+                        <div class="section-card" style="border-left: 5px solid #5D8AA8; text-align: left; margin-bottom: 10px;">
+                            <p style="margin:0;"><strong>👤 Paciente:</strong> ${c.paciente_nombre}</p>
+                            <p style="margin:0; font-size:0.9em;"><strong>📅 Fecha:</strong> ${c.fecha}</p>
+                            <p style="margin:0; font-size:0.9em;"><strong>⏰ Hora:</strong> ${c.hora}</p>
+                            ${c.motivo ? `<p style="margin:0; font-size:0.85em; color:#666;">📝 Motivo: ${c.motivo}</p>` : ''}
+                        </div>`;
+                });
+            } catch (e) { 
+                console.error(e);
+                contenedor.innerHTML = "Error al sincronizar la agenda médica."; 
+            }
+        }
+        cargarAgenda();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

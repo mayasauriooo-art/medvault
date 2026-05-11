@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Registro Paciente</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h3 style="color: #5D8AA8;">Crear Cuenta de Paciente</h3>
+        <div class="section-card">
+            <input type="text" id="regNombre" placeholder="Nombre completo" class="input-custom">
+            <input type="email" id="regCorreo" placeholder="Correo electrónico" class="input-custom">
+            <input type="password" id="regPass" placeholder="Contraseña" class="input-custom">
+            <button id="btnRegistrar" class="btn-main">Registrarme</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCREOGSVefLZtxn86NOWPVlqaNLCwthLYM",
+            authDomain: "medvault-8c504.firebaseapp.com",
+            projectId: "medvault-8c504",
+            storageBucket: "medvault-8c504.firebasestorage.app",
+            messagingSenderId: "618891803915",
+            appId: "1:618891803915:web:04942cc8e76967dff7b60e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('btnRegistrar').addEventListener('click', async () => {
+            const nombre = document.getElementById('regNombre').value.trim();
+            const correo = document.getElementById('regCorreo').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+
+            if (!nombre || !correo || !pass) {
+                alert("Llena todos los campos para tu cuenta ✨");
+                return;
+            }
+
+            try {
+                // LIMPIEZA: Al registrar uno nuevo, borramos rastros de sesiones anteriores
+                localStorage.clear();
+
+                await addDoc(collection(db, "pacientes"), {
+                    nombre: nombre,
+                    correo: correo,
+                    password: pass,
+                    tipo: "paciente",
+                    fechaRegistro: new Date().toLocaleDateString()
+                });
+
+                alert("¡Cuenta creada! Ya puedes iniciar sesión 🍓");
+                location.href = 'login_paciente.html';
+            } catch (e) {
+                alert("Error al registrar: " + e.message);
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

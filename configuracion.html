@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Configuracion</title>
+    <script>
+    // Sincronización inmediata de MedVault para evitar "flash" de colores
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.documentElement.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.documentElement.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.documentElement.classList.add('tema-amarillo');
+        }
+    })();
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema === 'azul') {
+            document.body.classList.add('tema-azul');
+        } else if (tema === 'verde') {
+            document.body.classList.add('tema-verde');
+        } else if (tema === 'amarillo') {
+            document.body.classList.add('tema-amarillo');
+        }
+    });
+</script>
+<script>
+    (function() {
+        const tema = localStorage.getItem('medvault-tema');
+        if (tema) {
+            document.documentElement.classList.add('tema-' + tema);
+        }
+    })();
+</script>
+</head>
+<body>
+    <div class="app-container">
+        <h2>Configuracion</h2>
+        <div class="section-card">
+            <p>Seleccionar Tema</p>
+            <button onclick="seleccionarTema('rosa')" style="background: #f8bbd0;">Tema Rosa</button>
+            <button onclick="seleccionarTema('azul')" style="background: #bbdefb;">Tema Azul</button>
+            <button onclick="seleccionarTema('verde')" style="background: #bbfbcf;">Tema Verde</button>
+            <button onclick="seleccionarTema('amarillo')" style="background: #f3fbbb;">Tema Amarillo</button>
+        </div>
+        <button class="btn-main" onclick="location.href='index.html'">Volver</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
